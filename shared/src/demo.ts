@@ -53,11 +53,16 @@ const attendance: AttendanceRecord[] = [
 ];
 
 const payments: Payment[] = [
+  // Omar: paid in full. Expect paid.
   { id: "p1", studentId: "st1", month: "2026-11", amountPiasters: 350_00, status: "paid", method: "instapay", paidOn: "2026-11-03" },
-  { id: "p2", studentId: "st2", month: "2026-11", amountPiasters: 350_00, status: "paid", method: "cash", paidOn: "2026-11-07" },
-  { id: "p3", studentId: "st3", month: "2026-11", amountPiasters: 350_00, status: "unpaid" },
-  // Nour paid October, but nothing yet for November.
-  { id: "p4", studentId: "st4", month: "2026-10", amountPiasters: 350_00, status: "paid", method: "vodafone_cash", paidOn: "2026-10-04" },
+  // Mariam: two installments that add up to the fee. Expect paid.
+  { id: "p2", studentId: "st2", month: "2026-11", amountPiasters: 175_00, status: "paid", method: "cash", paidOn: "2026-11-03" },
+  { id: "p3", studentId: "st2", month: "2026-11", amountPiasters: 175_00, status: "paid", method: "instapay", paidOn: "2026-11-10" },
+  // Youssef: paid half. Expect NOT paid.
+  { id: "p4", studentId: "st3", month: "2026-11", amountPiasters: 175_00, status: "paid", method: "vodafone_cash", paidOn: "2026-11-07" },
+  // Nour: paid October, owes November. Expect NOT paid.
+  { id: "p5", studentId: "st4", month: "2026-10", amountPiasters: 350_00, status: "paid", method: "vodafone_cash", paidOn: "2026-10-04" },
+  { id: "p6", studentId: "st4", month: "2026-11", amountPiasters: 350_00, status: "unpaid" },
 ];
 
 // ---- Run the logic ---------------------------------------------------------
@@ -78,14 +83,19 @@ for (const student of students) {
 console.log(`  (no records) ${attendanceRate([])}`);
 
 console.log(`\nNot paid for ${month}:`);
-for (const student of unpaidStudents(students, payments, month)) {
+for (const student of unpaidStudents(students, [group], payments, month)) {
   console.log(`  ${student.name} (parent: ${student.parentPhone})`);
 }
+
+// A student whose group is missing can't be checked against a fee, so they're flagged.
+const orphan: Student = { id: "st5", groupId: "g-deleted", name: "Karim", parentPhone: "01055555555" };
+const orphanResult = unpaidStudents([orphan], [group], [], month).map((s) => s.name);
+console.log(`  (student with missing group) ${orphanResult.join(", ") || "not flagged"}`);
 
 console.log("\nPayments:");
 for (const payment of payments) {
   const name = students.find((s) => s.id === payment.studentId)?.name ?? "?";
-  console.log(`  ${name.padEnd(8)} ${describePayment(payment)}`);
+  console.log(`  ${payment.month}  ${name.padEnd(8)} ${describePayment(payment)}`);
 }
 
 // ---- Lines that must NOT compile -------------------------------------------

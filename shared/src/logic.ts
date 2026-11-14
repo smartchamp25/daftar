@@ -1,4 +1,4 @@
-import type { AttendanceRecord, Payment, PaymentMethod, Student } from "./types.js";
+import type { AttendanceRecord, Group, Id, Payment, PaymentMethod, Student } from "./types.js";
 
 /**
  * The share of sessions attended, from 0 to 1.
@@ -18,12 +18,39 @@ export function attendanceRate(records: AttendanceRecord[]): number {
   return countable === 0 ? 0 : attended / countable;
 }
 
-/** The students with no paid payment for `month` ("YYYY-MM"). */
-export function unpaidStudents(students: Student[], payments: Payment[], month: string): Student[] {
-  const paidStudentIds = new Set(
-    payments.filter((p) => p.status === "paid" && p.month === month).map((p) => p.studentId),
-  );
-  return students.filter((s) => !paidStudentIds.has(s.id));
+/**
+ * The students who have not paid their group's full monthly fee for `month` ("YYYY-MM").
+ *
+ * Adds up every paid payment the student made for that month, so installments
+ * count, and compares the total with the group's fee. Unpaid records add nothing.
+ *
+ * If a student's group can't be found, the fee is unknown, so the student is
+ * included. This list exists to surface debts: a false alarm costs the tutor a
+ * glance, but a hidden debt costs them money. (Throwing would be worse: one bad
+ * record would hide every other student's debt behind a crash.)
+ *
+ * Known limit: every student is assumed to owe the full group fee. Discounts need
+ * per-student charges, which come with the charges/payments split in lesson 4.
+ */
+export function unpaidStudents(
+  students: Student[],
+  groups: Group[],
+  payments: Payment[],
+  month: string,
+): Student[] {
+  const feeByGroupId = new Map(groups.map((g) => [g.id, g.monthlyFeePiasters]));
+
+  const paidByStudentId = new Map<Id, number>();
+  for (const p of payments) {
+    if (p.status !== "paid" || p.month !== month) continue;
+    paidByStudentId.set(p.studentId, (paidByStudentId.get(p.studentId) ?? 0) + p.amountPiasters);
+  }
+
+  return students.filter((s) => {
+    const fee = feeByGroupId.get(s.groupId);
+    if (fee === undefined) return true;
+    return (paidByStudentId.get(s.id) ?? 0) < fee;
+  });
 }
 
 /**
