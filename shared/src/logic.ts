@@ -3,9 +3,10 @@ import type { AttendanceRecord, Group, Id, Payment, PaymentMethod, Student } fro
 /**
  * The share of sessions attended, from 0 to 1.
  * Present and late count as attended. Excused sessions are left out entirely.
- * With no countable sessions, the rate is 0.
+ * With no countable sessions there is nothing to measure, so the result is
+ * `null` ("no data"), not 0, which would read as "never comes".
  */
-export function attendanceRate(records: AttendanceRecord[]): number {
+export function attendanceRate(records: AttendanceRecord[]): number | null {
   let countable = 0;
   let attended = 0;
 
@@ -15,7 +16,7 @@ export function attendanceRate(records: AttendanceRecord[]): number {
     if (record.status === "present" || record.status === "late") attended++;
   }
 
-  return countable === 0 ? 0 : attended / countable;
+  return countable === 0 ? null : attended / countable;
 }
 
 /**

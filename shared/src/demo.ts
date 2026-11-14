@@ -45,7 +45,7 @@ const attendance: AttendanceRecord[] = [
   { sessionId: "se2", studentId: "st3", status: "absent" },
   { sessionId: "se3", studentId: "st3", status: "present" },
   { sessionId: "se4", studentId: "st3", status: "late" },
-  // Nour: excused all month, so nothing countable. Expect 0%.
+  // Nour: excused all month, so nothing countable. Expect "no data".
   { sessionId: "se1", studentId: "st4", status: "excused" },
   { sessionId: "se2", studentId: "st4", status: "excused" },
   { sessionId: "se3", studentId: "st4", status: "excused" },
@@ -77,8 +77,9 @@ console.log(`${sessions.length} sessions in ${month}\n`);
 console.log("Attendance rate:");
 for (const student of students) {
   const records = attendance.filter((r) => r.studentId === student.id);
-  const percent = Math.round(attendanceRate(records) * 100);
-  console.log(`  ${student.name.padEnd(8)} ${percent}%`);
+  const rate = attendanceRate(records);
+  const shown = rate === null ? "no data" : `${Math.round(rate * 100)}%`;
+  console.log(`  ${student.name.padEnd(8)} ${shown}`);
 }
 console.log(`  (no records) ${attendanceRate([])}`);
 
