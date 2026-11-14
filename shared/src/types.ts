@@ -3,8 +3,9 @@
 // Conventions:
 // - Ids are plain strings.
 // - Dates are ISO strings: a day is "2026-11-14", a month is "2026-11".
-// - Money is a whole number of Egyptian pounds (EGP). Fees are never fractional,
-//   and integers avoid floating-point rounding surprises.
+// - Money is an integer number of piasters (100 piasters = EGP 1). Fees can be
+//   fractional in pounds (a 10% discount on EGP 275 is EGP 247.50), and integers
+//   avoid floating-point rounding. Convert to pounds only when displaying.
 
 export type Id = string;
 
@@ -31,7 +32,7 @@ export interface Group {
   grade: Grade;
   /** The days of the week this group meets. */
   weekdays: Weekday[];
-  monthlyFeeEgp: number;
+  monthlyFeePiasters: number;
 }
 
 export interface Student {
@@ -60,7 +61,7 @@ interface PaymentBase {
   studentId: Id;
   /** The month this payment covers, "YYYY-MM". */
   month: string;
-  amountEgp: number;
+  amountPiasters: number;
 }
 
 export interface PaidPayment extends PaymentBase {

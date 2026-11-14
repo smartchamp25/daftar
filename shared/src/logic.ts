@@ -26,6 +26,20 @@ export function unpaidStudents(students: Student[], payments: Payment[], month: 
   return students.filter((s) => !paidStudentIds.has(s.id));
 }
 
+/**
+ * Formats piasters as pounds for display: 35000 → "EGP 350", 24750 → "EGP 247.50".
+ * This is the only place money is converted out of piasters.
+ */
+export function formatEgp(piasters: number): string {
+  const sign = piasters < 0 ? "-" : "";
+  const abs = Math.abs(piasters);
+  const pounds = Math.floor(abs / 100);
+  const rest = abs % 100;
+  return rest === 0
+    ? `${sign}EGP ${pounds}`
+    : `${sign}EGP ${pounds}.${String(rest).padStart(2, "0")}`;
+}
+
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: "cash",
   instapay: "InstaPay",
@@ -36,9 +50,9 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 export function describePayment(p: Payment): string {
   switch (p.status) {
     case "paid":
-      return `Paid EGP ${p.amountEgp} by ${METHOD_LABELS[p.method]}`;
+      return `Paid ${formatEgp(p.amountPiasters)} by ${METHOD_LABELS[p.method]}`;
     case "unpaid":
-      return `Owes EGP ${p.amountEgp} for ${p.month}`;
+      return `Owes ${formatEgp(p.amountPiasters)} for ${p.month}`;
     default: {
       // If a new status is added to Payment and not handled above,
       // `p` is no longer `never` here and this line stops compiling.
