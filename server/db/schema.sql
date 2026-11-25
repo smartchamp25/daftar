@@ -18,11 +18,14 @@ CREATE TABLE students (
   left_on      date
 );
 
--- One class meeting of one group on one date.
+-- One class meeting of one group on one date. A group can't have two
+-- sessions on the same date, so attendance can't be recorded twice for
+-- the same class.
 CREATE TABLE sessions (
   id       text PRIMARY KEY,
   group_id text NOT NULL REFERENCES groups(id),
-  held_on  date NOT NULL
+  held_on  date NOT NULL,
+  UNIQUE (group_id, held_on)
 );
 
 CREATE TABLE attendance (
