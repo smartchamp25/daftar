@@ -3,6 +3,18 @@ CREATE TABLE tutors (
   name text NOT NULL
 );
 
+-- Someone a tutor hires to take attendance and add students. An assistant
+-- belongs to one tutor's account. They must never see payments; that rule
+-- is enforced by the server, not by this table.
+-- Must come after tutors: tutor_id points at tutors(id), and Postgres can
+-- only reference a table that has already been created.
+CREATE TABLE assistants (
+  id       text PRIMARY KEY,
+  tutor_id text NOT NULL REFERENCES tutors(id),
+  name     text NOT NULL,
+  phone    text NOT NULL
+);
+
 CREATE TABLE groups (
   id                   text    PRIMARY KEY,
   tutor_id             text    NOT NULL REFERENCES tutors(id),
