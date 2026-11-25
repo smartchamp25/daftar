@@ -3,6 +3,18 @@ CREATE TABLE tutors (
   name text NOT NULL
 );
 
+-- Someone a tutor hires to take attendance and add students. An assistant
+-- belongs to one tutor's account. They must never see payments; that rule
+-- is enforced by the server, not by this table.
+-- Must come after tutors: tutor_id points at tutors(id), and Postgres can
+-- only reference a table that has already been created.
+CREATE TABLE assistants (
+  id       text PRIMARY KEY,
+  tutor_id text NOT NULL REFERENCES tutors(id),
+  name     text NOT NULL,
+  phone    text NOT NULL
+);
+
 CREATE TABLE groups (
   id                   text    PRIMARY KEY,
   tutor_id             text    NOT NULL REFERENCES tutors(id),
@@ -18,11 +30,14 @@ CREATE TABLE students (
   left_on      date
 );
 
--- One class meeting of one group on one date.
+-- One class meeting of one group on one date. A group can't have two
+-- sessions on the same date, so attendance can't be recorded twice for
+-- the same class.
 CREATE TABLE sessions (
   id       text PRIMARY KEY,
   group_id text NOT NULL REFERENCES groups(id),
-  held_on  date NOT NULL
+  held_on  date NOT NULL,
+  UNIQUE (group_id, held_on)
 );
 
 CREATE TABLE attendance (
