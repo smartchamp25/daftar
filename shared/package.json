@@ -1,0 +1,16 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Domain types and pure logic shared by the Daftar server and web app.",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "demo": "tsx src/demo.ts"
+  },
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
